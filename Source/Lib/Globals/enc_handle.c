@@ -1371,6 +1371,7 @@ EB_API EbErrorType svt_av1_enc_init(EbComponentType *svt_enc_component)
         input_data.variance_boost_strength = scs->static_config.variance_boost_strength;
         input_data.variance_octile = scs->static_config.variance_octile;
         input_data.tf_strength = scs->static_config.tf_strength;
+        input_data.kf_tf_strength = scs->static_config.kf_tf_strength;
         input_data.qp_scale_compress_strength = scs->static_config.qp_scale_compress_strength;
         input_data.adaptive_film_grain = scs->static_config.adaptive_film_grain;
         input_data.zones               = scs->static_config.parsed_zones;
@@ -4588,6 +4589,9 @@ static void copy_api_from_app(SequenceControlSet *scs, EbSvtAv1EncConfiguration 
 
     // Temporal filtering strength
     scs->static_config.tf_strength = config_struct->tf_strength;
+
+    // Keyframe temporal filtering strength
+    scs->static_config.kf_tf_strength = config_struct->kf_tf_strength;
 
     // Frame-level luminance-based QP bias
     scs->static_config.luminance_qp_bias = config_struct->luminance_qp_bias;

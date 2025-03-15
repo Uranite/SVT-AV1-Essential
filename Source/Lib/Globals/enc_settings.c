@@ -849,6 +849,11 @@ EbErrorType svt_av1_verify_settings(SequenceControlSet *scs) {
         return_error = EB_ErrorBadParameter;
     }
 
+    if (config->kf_tf_strength > 4) {
+        SVT_ERROR("Keyframe temporal filtering strength must be between 0 and 4\n");
+        return_error = EB_ErrorBadParameter;
+    }
+
     if (config->enable_tf > 3) {
         SVT_ERROR("Temporal filtering must be between 0 and 3\n");
         return_error = EB_ErrorBadParameter;
@@ -1083,6 +1088,7 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration *config_ptr) {
     config_ptr->variance_boost_strength           = 2;
     config_ptr->variance_octile                   = 5;
     config_ptr->tf_strength                       = 1;
+    config_ptr->kf_tf_strength                    = 0;
     config_ptr->variance_boost_curve              = 0;
     config_ptr->luminance_qp_bias                 = 0;
     config_ptr->sharpness                         = 1;
@@ -1228,6 +1234,28 @@ static const char *matrix_coefficients_to_str(EbMatrixCoefficients coeff) {
 
 static double get_extended_crf(EbSvtAv1EncConfiguration *config_ptr) {
     return (double)config_ptr->qp + (double)config_ptr->extended_crf_qindex_offset / 4;
+}
+
+static const char *tf_strength_to_str(int32_t strength) {
+    switch (strength) {
+    case 0: return "lowest (0)";
+    case 1: return "low (1)";
+    case 2: return "medium (2)";
+    case 3: return "high (3)";
+    case 4: return "highest (4)";
+    default: return "unknown";
+    }
+}
+
+static const char *kf_tf_strength_to_str(int32_t strength) {
+    switch (strength) {
+    case 0: return "disabled (0)";
+    case 1: return "low (1)";
+    case 2: return "medium (2)";
+    case 3: return "high (3)";
+    case 4: return "highest (4)";
+    default: return "unknown";
+    }
 }
 
 //#define DEBUG_BUFFERS
@@ -1475,22 +1503,15 @@ void svt_av1_print_lib_params(SequenceControlSet *scs) {
                  config->luminance_qp_bias);
 
         switch (config->enable_tf) {
-        case 0: SVT_INFO("SVT [config]: temporal filtering / strength \t\t\t\t: off / -\n"); break;
-        case 1: SVT_INFO("SVT [config]: temporal filtering / strength \t\t\t\t: on / %s\n",
-                         config->tf_strength == 0          ? "lowest (0)"
-                                : config->tf_strength == 1 ? "low (1)"
-                                : config->tf_strength == 2 ? "medium (2)"
-                                : config->tf_strength == 3 ? "high (3)"
-                                : config->tf_strength == 4 ? "highest (4)"
-                                : "unknown"); break;
-        case 2: SVT_INFO("SVT [config]: temporal filtering / strength \t\t\t\t: auto / -\n"); break;
-        case 3: SVT_INFO("SVT [config]: temporal filtering / strength \t\t\t\t: full / %s\n",
-                         config->tf_strength == 0          ? "lowest (0)"
-                                : config->tf_strength == 1 ? "low (1)"
-                                : config->tf_strength == 2 ? "medium (2)"
-                                : config->tf_strength == 3 ? "high (3)"
-                                : config->tf_strength == 4 ? "highest (4)"
-                                : "unknown"); break;
+        case 0: SVT_INFO("SVT [config]: temporal filtering \t\t\t\t\t\t: off\n"); break;
+        case 1:
+        case 3:
+            SVT_INFO("SVT [config]: temporal filtering / strength / keyframe strength \t: %s / %s / %s\n",
+                     config->enable_tf == 1 ? "on" : "full",
+                     tf_strength_to_str(config->tf_strength),
+                     kf_tf_strength_to_str(config->kf_tf_strength));
+            break;
+        case 2: SVT_INFO("SVT [config]: temporal filtering \t\t\t\t\t\t: auto\n"); break;
         default: break;
         }
 
@@ -2659,6 +2680,7 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"luminance-qp-bias", &config_struct->luminance_qp_bias},
         {"enable-tf", &config_struct->enable_tf},
         {"tf-strength", &config_struct->tf_strength},
+        {"kf-tf-strength", &config_struct->kf_tf_strength},
         {"max-tx-size", &config_struct->max_tx_size},
         {"noise-norm-strength", &config_struct->noise_norm_strength},
         {"sharp-tx", &config_struct->sharp_tx},

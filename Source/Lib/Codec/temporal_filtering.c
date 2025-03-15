@@ -2872,11 +2872,23 @@ static EbErrorType produce_temporally_filtered_pic(
         if (scs->static_config.enable_tf == 2) {
             uint8_t adaptive_tf_shift_factor = calculate_tf_shift_factor(ctx);
             assert(adaptive_tf_shift_factor <= 14);
+            const uint8_t kf_tf_shift_factor = CLIP3(0, 14, adaptive_tf_shift_factor + 1);
+            assert(kf_tf_shift_factor <= 14);
 
-            if (frame_update_type == SVT_AV1_KF_UPDATE) {
+            if (frame_update_type == SVT_AV1_KF_UPDATE && kf_tf_shift_factor == 14) {
                 ctx->tf_decay_factor_fp16[C_Y] = 0;
                 ctx->tf_decay_factor_fp16[C_U] = 0;
                 ctx->tf_decay_factor_fp16[C_V] = 0;
+            } else if (frame_update_type == SVT_AV1_KF_UPDATE) {
+                svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
+                                               &n_decay_fp10,
+                                               q_decay_fp8,
+                                               decay_control[C_U],
+                                               decay_control[C_V],
+                                               const_0dot7_fp16,
+                                               noise_levels_log1p_fp16,
+                                               kf_tf_shift_factor,
+                                               ctx->tf_chroma);
             } else {
                 svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
                                                &n_decay_fp10,
@@ -2898,11 +2910,37 @@ static EbErrorType produce_temporally_filtered_pic(
             const uint8_t tf_shift_factor = 10 + (4 - scs->static_config.tf_strength);
             assert(tf_shift_factor <= 14);
 
-            // we disable tf on keyframes
-            if (frame_update_type == SVT_AV1_KF_UPDATE) {
+            // kf_tf_shift_factor is manually adjusted by the user via --kf-tf-strength
+            // 10 + (4 - (0)) = 14 (Disables alt-ref TF on keyframes)
+            // 10 + (4 - (1)) = 13 (4x weaker, HDR default)
+            // 10 + (4 - (2)) = 12 (2x weaker)
+            // 10 + (4 - (3)) = 11 (mainline default)
+            // 10 + (4 - (4)) = 10 (2x stronger)
+            const uint8_t kf_tf_shift_factor = 10 + (4 - scs->static_config.kf_tf_strength);
+            assert(kf_tf_shift_factor <= 14);
+
+            /* mainline behavior: kf_tf_shift_factor is 1 + tf strength when using Tune 0 (VQ)
+            uint8_t kf_tf_shift_factor = tf_shift_factor;
+
+            if (scs->vq_ctrls.sharpness_ctrls.tf)
+                kf_tf_shift_factor = MIN(14, kf_tf_shift_factor + 1);
+            */
+
+            // when kf_tf_shift_factor is 14, we disable tf on keyframes
+            if (frame_update_type == SVT_AV1_KF_UPDATE && kf_tf_shift_factor == 14) {
                 ctx->tf_decay_factor_fp16[C_Y] = 0;
                 ctx->tf_decay_factor_fp16[C_U] = 0;
                 ctx->tf_decay_factor_fp16[C_V] = 0;
+            } else if (frame_update_type == SVT_AV1_KF_UPDATE) {
+                svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
+                                               &n_decay_fp10,
+                                               q_decay_fp8,
+                                               decay_control[C_U],
+                                               decay_control[C_V],
+                                               const_0dot7_fp16,
+                                               noise_levels_log1p_fp16,
+                                               kf_tf_shift_factor,
+                                               ctx->tf_chroma);
             } else {
                 svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
                                                &n_decay_fp10,
@@ -3414,11 +3452,23 @@ static EbErrorType produce_temporally_filtered_pic_ld(
     if (scs->static_config.enable_tf == 2) {
         uint8_t adaptive_tf_shift_factor = calculate_tf_shift_factor(ctx);
         assert(adaptive_tf_shift_factor <= 14);
+        const uint8_t kf_tf_shift_factor = CLIP3(0, 14, adaptive_tf_shift_factor + 1);
+        assert(kf_tf_shift_factor <= 14);
 
-        if (frame_update_type == SVT_AV1_KF_UPDATE) {
+        if (frame_update_type == SVT_AV1_KF_UPDATE && kf_tf_shift_factor == 14) {
             ctx->tf_decay_factor_fp16[C_Y] = 0;
             ctx->tf_decay_factor_fp16[C_U] = 0;
             ctx->tf_decay_factor_fp16[C_V] = 0;
+        } else if (frame_update_type == SVT_AV1_KF_UPDATE) {
+            svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
+                                           &n_decay_fp10,
+                                           q_decay_fp8,
+                                           decay_control,
+                                           decay_control,
+                                           const_0dot7_fp16,
+                                           noise_levels_log1p_fp16,
+                                           kf_tf_shift_factor,
+                                           ctx->tf_chroma);
         } else {
             svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
                                            &n_decay_fp10,
@@ -3440,11 +3490,37 @@ static EbErrorType produce_temporally_filtered_pic_ld(
         const uint8_t tf_shift_factor = 10 + (4 - scs->static_config.tf_strength);
         assert(tf_shift_factor <= 14);
 
-        // we disable tf on keyframes
-        if (frame_update_type == SVT_AV1_KF_UPDATE) {
+        // kf_tf_shift_factor is manually adjusted by the user via --kf-tf-strength
+        // 10 + (4 - (0)) = 14 (Disables alt-ref TF on keyframes)
+        // 10 + (4 - (1)) = 13 (4x weaker, HDR default)
+        // 10 + (4 - (2)) = 12 (2x weaker)
+        // 10 + (4 - (3)) = 11 (mainline default)
+        // 10 + (4 - (4)) = 10 (2x stronger)
+        const uint8_t kf_tf_shift_factor = 10 + (4 - scs->static_config.kf_tf_strength);
+        assert(kf_tf_shift_factor <= 14);
+
+        /* mainline behavior: kf_tf_shift_factor is 1 + tf strength when using Tune 0 (VQ)
+        uint8_t kf_tf_shift_factor = tf_shift_factor;
+
+        if (scs->vq_ctrls.sharpness_ctrls.tf)
+            kf_tf_shift_factor = MIN(14, kf_tf_shift_factor + 1);
+        */
+
+        // when kf_tf_shift_factor is 14, we disable tf on keyframes
+        if (frame_update_type == SVT_AV1_KF_UPDATE && kf_tf_shift_factor == 14) {
             ctx->tf_decay_factor_fp16[C_Y] = 0;
             ctx->tf_decay_factor_fp16[C_U] = 0;
             ctx->tf_decay_factor_fp16[C_V] = 0;
+        } else if (frame_update_type == SVT_AV1_KF_UPDATE) {
+            svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
+                                           &n_decay_fp10,
+                                           q_decay_fp8,
+                                           decay_control,
+                                           decay_control,
+                                           const_0dot7_fp16,
+                                           noise_levels_log1p_fp16,
+                                           kf_tf_shift_factor,
+                                           ctx->tf_chroma);
         } else {
             svt_av1_calculate_decay_factor(ctx->tf_decay_factor_fp16,
                                            &n_decay_fp10,

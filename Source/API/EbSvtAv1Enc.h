@@ -871,6 +871,14 @@ typedef struct EbSvtAv1EncConfiguration {
      * 10 + (4 - 4) = 10 (2x stronger) */
     uint8_t tf_strength;
 
+    /* Manually adjust TF strength on keyframes
+     * 0: disable alt-ref TF on keyframes (default)
+     * 1: 10 + (4 - 1) = 13 (4x weaker)
+     * 2: 10 + (4 - 2) = 12 (2x weaker)
+     * 3: 10 + (4 - 3) = 11 (mainline default)
+     * 4: 10 + (4 - 4) = 10 (2x stronger) */
+    uint8_t kf_tf_strength;
+
     /* Stores the optional film grain synthesis info */
     AomFilmGrain *fgs_table;
 
@@ -1152,7 +1160,7 @@ typedef struct EbSvtAv1EncConfiguration {
         - (sizeof(bool) * 4)
         - sizeof(SpeedPreset)
         - sizeof(QualityPreset)
-        - (sizeof(uint8_t) * 9)
+        - (sizeof(uint8_t) * 10)
         - sizeof(uint32_t)
         - sizeof(int)
         - sizeof(char*)

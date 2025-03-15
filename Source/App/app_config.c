@@ -210,6 +210,7 @@
 #define VARIANCE_BOOST_STRENGTH_TOKEN "--variance-boost-strength"
 #define VARIANCE_OCTILE_TOKEN "--variance-octile"
 #define TF_STRENGTH_FILTER_TOKEN "--tf-strength"
+#define KF_TF_STRENGTH_FILTER_TOKEN "--kf-tf-strength"
 #define SHARPNESS_TOKEN "--sharpness"
 #define VARIANCE_BOOST_CURVE_TOKEN "--variance-boost-curve"
 #define LUMINANCE_QP_BIAS_TOKEN "--luminance-qp-bias"
@@ -804,6 +805,9 @@ ConfigDescription config_entry_rc[] = {
     // TF Strength
     {TF_STRENGTH_FILTER_TOKEN,
      "Adjust temporal filtering strength, default is 1 [0-4]"},
+    // Keyframe temporal filtering strength
+    {KF_TF_STRENGTH_FILTER_TOKEN,
+    "Adjust TF strength on keyframes, default is 0 (tf on keyframe disabled) [0-4]"},
     // Frame-level luminance-based QP bias
     {LUMINANCE_QP_BIAS_TOKEN,
      "Adjusts a frame's QP based on its average luma value, default is 10 [0-100]"},
@@ -1525,6 +1529,9 @@ ConfigEntry config_entry[] = {
 
     // TF Strength
     {TF_STRENGTH_FILTER_TOKEN, "TemporalFilteringStrength", set_cfg_generic_token},
+
+    //Keyframe temporal filtering strength
+    {KF_TF_STRENGTH_FILTER_TOKEN, "KeyframeTemporalFilteringStrength", set_cfg_generic_token},
 
     // Frame-level luminance-based QP bias
     {LUMINANCE_QP_BIAS_TOKEN, "LuminanceQpBias", set_cfg_generic_token},
