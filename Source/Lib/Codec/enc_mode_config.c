@@ -1348,7 +1348,7 @@ static uint8_t svt_aom_get_wn_filter_level(EncMode enc_mode, uint8_t input_resol
             wn_filter_lvl = 5;
         else
             wn_filter_lvl = 0;
-    } else if (enc_mode <= ENC_M1) {
+    } else if (enc_mode <= ENC_M3) {
         wn_filter_lvl = is_not_last_layer ? 4 : 0;
     } else if ((enc_mode <= ENC_M8 && !rtc_tune) || (enc_mode <= ENC_M6 && rtc_tune))
         wn_filter_lvl = is_not_last_layer ? 5 : 0;
@@ -1368,13 +1368,13 @@ static uint8_t svt_aom_get_sg_filter_level(EncMode enc_mode, uint8_t input_resol
     if (allintra) {
         if (enc_mode <= ENC_MR)
             sg_filter_lvl = 1;
-        else if (enc_mode <= ENC_M1)
+        else if (enc_mode <= ENC_M3)
             sg_filter_lvl = 3;
         else
             sg_filter_lvl = 0;
     } else if (enc_mode <= ENC_MR)
         sg_filter_lvl = 1;
-    else if (enc_mode <= ENC_M1)
+    else if (enc_mode <= ENC_M3)
         sg_filter_lvl = 3;
     else
         sg_filter_lvl = 0;
@@ -4422,7 +4422,7 @@ void svt_aom_set_nsq_geom_ctrls(ModeDecisionContext *ctx, uint8_t nsq_geom_level
     case 2:
         nsq_geom_ctrls->enabled            = 1;
         nsq_geom_ctrls->min_nsq_block_size = 0;
-        nsq_geom_ctrls->allow_HV4          = 0;
+        nsq_geom_ctrls->allow_HV4          = 1;
         nsq_geom_ctrls->allow_HVA_HVB      = 0;
         break;
     case 3:
