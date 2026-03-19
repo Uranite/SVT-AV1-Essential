@@ -1116,7 +1116,7 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration *config_ptr) {
     config_ptr->hide_banner                       = false;
     config_ptr->noise_norm_strength               = 0;
     config_ptr->sharp_tx                          = 1;
-    config_ptr->tx_bias                           = 0;
+    config_ptr->tx_bias                           = 2;
     config_ptr->complex_hvs                       = 0;
     config_ptr->noise_adaptive_filtering          = 1;
     config_ptr->alt_cdef                          = 0;
