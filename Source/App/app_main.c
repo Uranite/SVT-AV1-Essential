@@ -428,9 +428,6 @@ int main(int argc, char* argv[]) {
 
     if (no_color != NULL && no_color[0] != '\0')
         color = false;
-#ifdef _WIN32
-    color = false;
-#endif
     signal(SIGINT, event_handler);
     if (get_version(argc, argv))
         return 0;
