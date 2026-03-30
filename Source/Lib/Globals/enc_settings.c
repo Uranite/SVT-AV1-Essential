@@ -1464,7 +1464,7 @@ void svt_av1_print_lib_params(SequenceControlSet *scs) {
         }
 
         if (config->enable_qm == 1) {
-            SVT_INFO("SVT [config]: quant. matrices min / max / chroma-min / chroma-max \t: %d / %d / %d / %d\n",
+            SVT_INFO("SVT [config]: QM luma min/max / chroma min/max \t\t\t: %d/%d / %d/%d\n",
                      config->min_qm_level,
                      config->max_qm_level,
                      config->min_chroma_qm_level,
