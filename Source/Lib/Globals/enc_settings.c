@@ -1266,7 +1266,7 @@ void svt_av1_print_lib_params(SequenceControlSet *scs) {
         SVT_INFO("SVT [config]: preset \t\t\t\t\t\t: Pass 1\n");
     } else {
         SVT_INFO("SVT [config]: output format / profile / tier / level \t\t: %s / %s / %s / %s\n",
-                 (config->webm) ? "WebM" : "ivf",
+                 (config->webm == 1) ? "WebM" : "ivf",
                  config->profile == MAIN_PROFILE               ? "main"
                      : config->profile == HIGH_PROFILE         ? "high"
                      : config->profile == PROFESSIONAL_PROFILE ? "professional"

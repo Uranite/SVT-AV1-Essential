@@ -1988,6 +1988,23 @@ static EbErrorType set_default_output_path(EbConfig *cfg) {
 static EbErrorType app_verify_config(EbConfig *app_cfg) {
     EbErrorType return_error = EB_ErrorNone;
 
+    if (app_cfg->config.webm == DEFAULT) {
+#ifdef CONFIG_WEBM_IO
+        app_cfg->config.webm = 1;
+#else
+        app_cfg->config.webm = 0;
+#endif
+    }
+#ifndef CONFIG_WEBM_IO
+    else if (app_cfg->config.webm == 1) {
+        fprintf(stderr, "Warning: This build does not have WebM IO support, falling back to IVF\n");
+        app_cfg->config.webm = 0;
+    }
+#endif
+#ifdef CONFIG_WEBM_IO
+    app_cfg->write_webm = app_cfg->config.webm ? true : false;
+#endif
+
     // Check Input File
     if (app_cfg->input_file == NULL && !app_cfg->use_ffms2) {
         fprintf(app_cfg->error_log_file, "Error: Invalid Input File\n");
