@@ -1262,6 +1262,7 @@ static const char *kf_tf_strength_to_str(int32_t strength) {
 void svt_av1_print_lib_params(SequenceControlSet *scs) {
     EbSvtAv1EncConfiguration *config = &scs->static_config;
 
+    SVT_INFO("-------------------------------------------\n");
     if (config->pass == ENC_FIRST_PASS) {
         SVT_INFO("SVT [config]: preset \t\t\t\t\t\t: Pass 1\n");
     } else {
