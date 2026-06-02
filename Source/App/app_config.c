@@ -430,13 +430,22 @@ static EbErrorType set_cfg_stream_file(EbConfig *cfg, const char *token, const c
         cfg->bitstream_file = stdout;
         return EB_ErrorNone;
     }
+
+    if (cfg->config.webm == DEFAULT) {
+        const char *ext = strrchr(value, '.');
+        if (ext) {
+            if (!strcasecmp(ext, ".webm")) {
+                cfg->config.webm = 1;
+            } else if (!strcasecmp(ext, ".ivf")) {
+                cfg->config.webm = 0;
+            }
+        }
+    }
+
 #if CONFIG_WEBM_IO
     //fprintf(stderr, "webm: %d\n", cfg->config.webm);
     cfg->write_webm = cfg->config.webm ? true : false;
     //fprintf(stderr, "write_webm: %d\n", cfg->write_webm);
-#else
-    if (cfg->config.webm > 0)
-        fputs("Warning: This build does not have WebM IO support, falling back to IVF\n", stderr);
 #endif
     return open_file(&cfg->bitstream_file, token, value, "wb");
 }
@@ -1975,9 +1984,6 @@ static EbErrorType set_default_output_path(EbConfig *cfg) {
     //fprintf(stderr, "webm: %d\n", cfg->config.webm);
     cfg->write_webm = cfg->config.webm ? true : false;
     //fprintf(stderr, "write_webm: %d\n", cfg->write_webm);
-#else
-    if (cfg->config.webm > 0)
-        fputs("Warning: This build does not have WebM IO support, falling back to IVF\n", stderr);
 #endif
 
     return err;
